@@ -9,9 +9,9 @@
 //类模板不同于其他的对象，它的声明与实现不能分开，必须放在同一文件中
 using namespace std;
 
-	
 
-template <class data,class value>
+
+template <class data, class value>
 class BNode
 {
 	template <typename data, typename value>
@@ -25,28 +25,28 @@ public:
 	{
 		if (left)
 		{
-			for(int i=0;i<=father->index;i++)
+			for (int i = 0; i <= father->index; i++)
 				if (father->Slot[i] == p)
 				{
 					V[index] = father->V[i];
-					Slot[index+1]= p->Slot[p->index ];
+					Slot[index + 1] = p->Slot[p->index];
 					int i;
-					for (i = index; i >0; i--)
+					for (i = index; i > 0; i--)
 					{
-						swap(Slot[i+1], Slot[i ]);
-							swap(V[i], V[i - 1]);
+						swap(Slot[i + 1], Slot[i]);
+						swap(V[i], V[i - 1]);
 					}
 					swap(Slot[i], Slot[i + 1]);
 					index++;
-					
 
-					father->V[i] = p->V[p->index-1];
+
+					father->V[i] = p->V[p->index - 1];
 					p->V[p->index - 1] = 0;
 					p->Slot[p->index] = 0;
-						p->index--;
-						break;
+					p->index--;
+					break;
 				}
-				
+
 		}
 		else
 		{
@@ -54,24 +54,24 @@ public:
 				if (father->Slot[j] == this)
 				{
 					V[index] = father->V[j];
-						Slot[index + 1] = p->Slot[0];
-				
+					Slot[index + 1] = p->Slot[0];
+
 					father->V[j] = p->V[0];
 					p->V[0] = 0;
-					p->Slot[0]=0;
+					p->Slot[0] = 0;
 					int i;
 					p->index--;
 					for (i = 0; i < p->index; i++)
 					{
-						swap(p->Slot[i],p-> Slot[i + 1]);
+						swap(p->Slot[i], p->Slot[i + 1]);
 						swap(p->V[i], p->V[i + 1]);
 					}
 					swap(p->Slot[i], p->Slot[i + 1]);
-						index++;
-				
+					index++;
 
-					
-						
+
+
+
 				}
 		}
 		return 0;
@@ -87,28 +87,28 @@ public:
 					father->V[i] = 0;
 
 					father->Slot[i + 1] = 0;
-					int j ;
+					int j;
 					for (j = i; j < father->index; j++)
 					{
 						swap(V[j], V[j + 1]);
-							swap(Slot[j + 1], Slot[j + 2]);
+						swap(Slot[j + 1], Slot[j + 2]);
 					}
 					father->index--;
 					fro->index++;
 					int ind = fro->index;
-						int x;
-						for ( x= ind; x< x - ind + this->index; x++)
-						{
-							fro->V[x] = V[x - ind];
-							fro->Slot[x] = Slot[x - ind];
-								fro->index++;
-
-						}
+					int x;
+					for (x = ind; x < x - ind + this->index; x++)
+					{
+						fro->V[x] = V[x - ind];
 						fro->Slot[x] = Slot[x - ind];
+						fro->index++;
+
+					}
+					fro->Slot[x] = Slot[x - ind];
 
 					if (father->father == 0 && father->index == 0)
 					{
-						
+
 						delete father;
 						father = fro;
 						fro->father = 0;
@@ -128,8 +128,8 @@ public:
 						}
 					}
 					fro->beh = beh;
-					if(beh)
-					beh->fro = fro;
+					if (beh)
+						beh->fro = fro;
 					delete this;
 				}
 		}
@@ -144,7 +144,7 @@ public:
 					father->V[i] = 0;
 
 					father->Slot[i + 1] = 0;
-					
+
 					int j;
 					for (j = i; j < father->index; j++)
 					{
@@ -154,18 +154,18 @@ public:
 					father->index--;
 					index++;
 					int ind = index;
-						int x;
+					int x;
 					for (x = ind; x < ind + beh->index; x++)
 					{
 						V[x] = beh->V[x - ind];
 						Slot[x] = beh->Slot[x - ind];
-							index++;
+						index++;
 
 					}
 					Slot[x] = beh->Slot[x - ind];
 
-					
-				   if (father!=0)
+
+					if (father != 0)
 					{
 						BNode<data, value>* p = father;
 						if (father->index < ceil(Node_size + 1) / 2 - 1)
@@ -173,9 +173,9 @@ public:
 							if (father->father == 0 && father->index == 0)
 							{
 
-								
-								
-								
+
+
+
 								if (this->beh)
 									this->beh->fro = this;
 								if (this->fro)
@@ -187,8 +187,8 @@ public:
 								father->father = 0;
 								delete this;
 								return 0;
-								
-								
+
+
 							}
 							else if (p->fro != 0 && p->father == p->fro->father && p->fro->index > ceil(Node_size + 1) / 2 - 1)
 								father->merge_bro_bpluse(p->fro, 1);
@@ -198,15 +198,15 @@ public:
 								father->merge_fa_bpluse();
 						}
 					}
-					
-			          if (beh->beh)
-			         {
-				           beh->beh->fro = this;
-				             beh = beh->beh;
-			          }
-			              else
-			             	beh = beh->beh;
-						delete beh;
+
+					if (beh->beh)
+					{
+						beh->beh->fro = this;
+						beh = beh->beh;
+					}
+					else
+						beh = beh->beh;
+					delete beh;
 				}
 
 
@@ -214,7 +214,7 @@ public:
 		}
 		return 0;
 	}
-	bool merge_bro(BNode<data, value>* p, bool left)
+	bool merge_bro(BNode<data, value> * p, bool left)
 	{
 		if (left)
 		{
@@ -274,7 +274,7 @@ public:
 			{
 				swap(fro->V[fro->index], V[i]);
 				swap(fro->D[fro->index], D[i]);
-					i++;
+				i++;
 			}
 			for (int i = 0; i < father->index; i++)
 			{
@@ -282,21 +282,21 @@ public:
 				{
 					father->V[i] = 0;
 					father->Slot[i + 1] = 0;
-					while (i+1 != father->index)
+					while (i + 1 != father->index)
 					{
 						swap(father->V[i], father->V[i + 1]);
-						swap(father->Slot[i+1], father->Slot[i + 2]);
+						swap(father->Slot[i + 1], father->Slot[i + 2]);
 						i++;
 					}
 				}
 			}
 			fro->beh = beh;
-			if(beh)
-			beh->fro = fro;
+			if (beh)
+				beh->fro = fro;
 			fro->index++;
 			father->index--;
-			
-			
+
+
 		}
 		else
 		{
@@ -308,14 +308,14 @@ public:
 				{
 					swap(beh->V[i], beh->V[i + index]);
 					swap(beh->D[i], beh->D[i + index]);
-				
+
 				}
 				for (int i = 0; i < index; i++)
 				{
 					swap(V[i], beh->V[i]);
 					swap(D[i], beh->D[i]);
 				}
-				
+
 				for (int i = 0; i < father->index; i++)
 				{
 					if (father->Slot[i] == this)
@@ -325,7 +325,7 @@ public:
 						while (i + 1 != father->index)
 						{
 							swap(father->V[i], father->V[i + 1]);
-							swap(father->Slot[i ], father->Slot[i + 1]);
+							swap(father->Slot[i], father->Slot[i + 1]);
 							i++;
 						}
 					}
@@ -335,15 +335,15 @@ public:
 				father->index--;
 				beh->index++;
 
-				
+
 
 			}
 		}
-		
-		BNode<data,value>* p = father;
+
+		BNode<data, value>* p = father;
 		if (father->index < ceil(Node_size + 1) / 2 - 1)
 		{
-		
+
 			if (p->fro != 0 && p->father == p->fro->father && p->fro->index > ceil(Node_size + 1) / 2 - 1)
 				father->merge_bro_bpluse(p->fro, 1);
 			else if (p->beh != 0 && p->father == p->beh->father && p->beh->index > ceil(Node_size + 1) / 2 - 1)
@@ -360,7 +360,7 @@ public:
 		return 1;
 	}
 
-	BNode(int Node_size = 5,bool is=0):Node_size(Node_size),isBpluse(is)
+	BNode(int Node_size = 5, bool is = 0) :Node_size(Node_size), isBpluse(is)
 	{
 		if (isBpluse)
 		{
@@ -377,9 +377,9 @@ public:
 		beh = 0;
 		index = 0;
 	}
-	BNode(BNode& A)
+	BNode(BNode & A)
 	{
-		BNode* p = new BNode(A.Node_size,A.isBpluse);
+		BNode* p = new BNode(A.Node_size, A.isBpluse);
 		father = A.father;
 		fro = A.fro;
 		beh = A.beh;
@@ -394,28 +394,28 @@ public:
 		else
 		{
 			for (int i = 0; i < A.index; i++)
-   		           D[i] = A.D[i];	
+				D[i] = A.D[i];
 		}
 		for (int i = 0; i < A.index; i++)
 			V[i] = A.V[i];
-		
-		
+
+
 	}
-	BNode& operator=(BNode& A)
+	BNode& operator=(BNode & A)
 	{
 		cout << "no copy operator" << endl;
 	}
 	int get_insert_index(value v)
 	{
 		int i = 0;
-		for ( i = 0; i < index; i++)
+		for (i = 0; i < index; i++)
 		{
 			if (v < V[i])
 			{
 				for (int j = index; j > i; j--)
 				{
 					if (isBpluse)
-						swap(Slot[j], Slot[j +1]);
+						swap(Slot[j], Slot[j + 1]);
 					else
 						swap(D[j], D[j - 1]);
 					swap(V[j], V[j - 1]);
@@ -425,7 +425,7 @@ public:
 		}
 		return i;
 	}
-	
+
 	bool add_node(data d, value v)
 	{
 		if (index < Node_size)
@@ -442,18 +442,18 @@ public:
 		}
 		else
 			return 0;
-	
+
 	}
-	bool add_slot_node(value v,BNode* p , BNode * q)
+	bool add_slot_node(value v, BNode * p, BNode * q)
 	{
-	
+
 		if (index < Node_size)
 		{
-			
+
 			int n = get_insert_index(v);
 
 			Slot[n] = p;
-			Slot[n+1] = q;
+			Slot[n + 1] = q;
 			V[n] = v;
 			++index;
 			if (index == Node_size)
@@ -470,66 +470,67 @@ public:
 		if (!isBpluse)
 		{
 			for (int i = 0; i < index; i++)
-			{		delete D[i];
-			D[i] = 0;
+			{
+				delete D[i];
+				D[i] = 0;
 			}
 		}
-		if(int(D)!=0xdddddddd)
-		delete  []D;
 		if (int(D) != 0xdddddddd)
-		delete []V;
+			delete[]D;
 		if (int(D) != 0xdddddddd)
-		delete []Slot;
+			delete[]V;
+		if (int(D) != 0xdddddddd)
+			delete[]Slot;
 		D = 0;
 		V = 0;
-		Slot =0 ;
+		Slot = 0;
 		father = 0;
 		fro = 0;
 		beh = 0;
-		
+
 	}
-	BNode* divide()
+	BNode * divide()
 	{
 		if (father == 0)
 		{
 			BNode* p1;
-				BNode* p2;
-				int mid = Node_size / 2;
+			BNode* p2;
+			int mid = Node_size / 2;
 			if (isBpluse == 1)
 			{
-				 p1 = new BNode(Node_size,1);
-			 p2= new BNode(Node_size,1);
+				p1 = new BNode(Node_size, 1);
+				p2 = new BNode(Node_size, 1);
 
-			
-			 int i;
-			 
-				for (i= 0; i < mid; i++)
+
+				int i;
+
+				for (i = 0; i < mid; i++)
 				{
 					p1->add_slot_node(V[i], Slot[i], Slot[i + 1]);
 					Slot[i]->father = p1;
-					
+
 				}
 				Slot[i]->father = p1;
-				for ( i = mid+1; i < index; i++)
+				for (i = mid + 1; i < index; i++)
 				{
 					p2->add_slot_node(V[i], Slot[i], Slot[i + 1]);
 					Slot[i]->father = p2;
 				}
 				Slot[i]->father = p2;
-				if(this->fro)
-				this->fro->beh = p1;
+				if (this->fro)
+					this->fro->beh = p1;
 				p1->fro = this->fro;
 				p1->beh = p2;
 				p2->fro = p1;
 				p2->beh = this->beh;
 				if (this->beh)
-				this->beh->fro = p2;
-				
+					this->beh->fro = p2;
+
 			}
 			else
 			{
-				 p1 = new BNode(Node_size);
-				 p2 = new BNode(Node_size);
+				p1 = new BNode(Node_size);
+				p2 = new BNode(Node_size);
 				int mid = Node_size / 2;
 				for (int i = 0; i < mid; i++)
 				{
@@ -539,27 +540,27 @@ public:
 				{
 					p2->add_node(*D[i], V[i]);
 				}
-				if(this->fro)
-				this->fro->beh = p1;
+				if (this->fro)
+					this->fro->beh = p1;
 				p1->fro = this->fro;
 				p1->beh = p2;
 				p2->fro = p1;
 				p2->beh = this->beh;
 				if (this->beh)
-				this->beh->fro = p2;
+					this->beh->fro = p2;
 			}
 			int aim = V[mid];
 			p1->father = this;
 			p2->father = this;
 			this->BNode::BNode(Node_size, 1);
 			this->add_slot_node(aim, p1, p2);
-		
-			
-			
-			
+
+
+
+
 			return this;
-		
-		} 
+
+		}
 		else
 		{
 			BNode* p1;
@@ -568,36 +569,36 @@ public:
 			int mid = Node_size / 2;
 			if (isBpluse == 1)
 			{
-				 p1 = new BNode(Node_size,1);
-				 p2 = new BNode(Node_size,1);
-				 int i;
-				 for ( i = 0; i < mid; i++)
-				 {
-					 p1->add_slot_node(V[i], Slot[i], Slot[i + 1]);
-					 Slot[i]->father = p1;
+				p1 = new BNode(Node_size, 1);
+				p2 = new BNode(Node_size, 1);
+				int i;
+				for (i = 0; i < mid; i++)
+				{
+					p1->add_slot_node(V[i], Slot[i], Slot[i + 1]);
+					Slot[i]->father = p1;
 
-				 }
-				 Slot[i]->father = p1;
-				 for ( i = mid + 1; i < index; i++)
-				 {
-					 p2->add_slot_node(V[i], Slot[i], Slot[i + 1]);
-					 Slot[i]->father = p2;
-				 }
-				 Slot[i]->father = p2;
-				 if (this->fro)
-					 this->fro->beh = p1;
-				 p1->fro = this->fro;
-				 p1->beh = p2;
-				 p2->fro = p1;
-				 p2->beh = this->beh;
-				 if (this->beh)
-					 this->beh->fro = p2;
-				 
+				}
+				Slot[i]->father = p1;
+				for (i = mid + 1; i < index; i++)
+				{
+					p2->add_slot_node(V[i], Slot[i], Slot[i + 1]);
+					Slot[i]->father = p2;
+				}
+				Slot[i]->father = p2;
+				if (this->fro)
+					this->fro->beh = p1;
+				p1->fro = this->fro;
+				p1->beh = p2;
+				p2->fro = p1;
+				p2->beh = this->beh;
+				if (this->beh)
+					this->beh->fro = p2;
+
 			}
 			else
 			{
-				 p1 = new BNode(Node_size);
-				 p2 = new BNode(Node_size);
+				p1 = new BNode(Node_size);
+				p2 = new BNode(Node_size);
 				int mid = Node_size / 2;
 				for (int i = 0; i < mid; i++)
 				{
@@ -607,31 +608,31 @@ public:
 				{
 					p2->add_node(*D[i], V[i]);
 				}
-				if(this->fro)
-				this->fro->beh = p1;
+				if (this->fro)
+					this->fro->beh = p1;
 				p1->fro = this->fro;
 				p1->beh = p2;
 				p2->fro = p1;
 				p2->beh = this->beh;
 				if (this->beh)
-				this->beh->fro = p2;
+					this->beh->fro = p2;
 			}
 			p1->father = p3;
 			p2->father = p3;
-			
+
 			p3->add_slot_node(V[mid], p1, p2);
-		
+
 			delete this;
-		
+
 
 
 
 			return this;
 		}
-		
+
 	}
 private:
-	data ** D;
+	data** D;
 	value* V;
 	BNode** Slot;
 	int index;
@@ -653,15 +654,15 @@ class Bplusetree
 
 	template <typename data, typename value>
 	friend class BNode;
-	
+
 public:
-	Bplusetree(int Node_size):Node_size(Node_size)
+	Bplusetree(int Node_size) :Node_size(Node_size)
 	{
-		root = new BNode<data,value>(Node_size);
-		
+		root = new BNode<data, value>(Node_size);
+
 		fro = new BNode<data, value>(Node_size);
 		beh = new BNode<data, value>(Node_size);
-		
+
 	}
 	~Bplusetree()
 	{
@@ -686,11 +687,11 @@ public:
 				if (p)
 				{
 					kill.push(p);
-				
+
 				}
 				else
 				{
-					
+
 					exit(-5);
 				}
 
@@ -711,35 +712,35 @@ public:
 			kill.top() = 0;
 			kill.pop();
 		}
-	
 
-			
-			delete fro;
-			delete beh;
-	
-		
+
+
+		delete fro;
+		delete beh;
+
+
 		root = 0;
 		fro = 0;
 		beh = 0;
 	}
-	Bplusetree(Bplusetree & T) 
+	Bplusetree(Bplusetree & T)
 	{
 		cout << "no constrcu please use smart pointer";
-	
+
 	}
-	data* get_data(BNode<data, value>* p, int ind)
+	data* get_data(BNode<data, value> * p, int ind)
 	{
 		return p->D[ind];
 	}
 	data* get_data(value v)
 	{
-		auto t=find(v);
+		auto t = find(v);
 		if (t.first)
 			return get_data(t.first, t.second);
 		else
 			return 0;
 	}
-	pair<BNode<data, value>*,int> find(value v)
+	pair<BNode<data, value>*, int> find(value v)
 	{
 		BNode<data, value>* p;
 		p = root;
@@ -760,9 +761,9 @@ public:
 					{
 						for (int j = 0; j < p->index; j++)
 							if (p->V[j] == v)
-								return  pair<BNode<data, value>*, int> (p,j);
-						return  pair<BNode<data, value>*, int>(0,0);
-							
+								return  pair<BNode<data, value>*, int>(p, j);
+						return  pair<BNode<data, value>*, int>(0, 0);
+
 					}
 				}
 			}
@@ -781,7 +782,7 @@ public:
 					for (int j = 0; j < p->index; j++)
 						if (p->V[j] == v)
 							return  pair<BNode<data, value>*, int>(p, j);
-					return  pair<BNode<data, value>*,int>(0, 0);
+					return  pair<BNode<data, value>*, int>(0, 0);
 				}
 			}
 		}
@@ -802,7 +803,7 @@ public:
 					{
 						p = p->Slot[i];
 						i = -1;
-						
+
 					}
 					else
 					{
@@ -818,22 +819,22 @@ public:
 				{
 					p = p->Slot[i];
 					i = -1;
-				
+
 				}
 				else
 				{
-					
+
 					p->add_node(d, v);
 					return 1;
 				}
 			}
 		}
 		return 0;
-	}	
+	}
 	vector<data*> visit()
 	{
 		vector<data*> out;
-		BNode<data, value>* p=root;
+		BNode<data, value>* p = root;
 		while (p)
 		{
 			if (p->isBpluse)
@@ -850,7 +851,7 @@ public:
 						out.push_back(p->D[i]);
 					}					p = p->beh;
 				}
-				
+
 			}
 		}
 		cout << endl;
@@ -866,7 +867,7 @@ public:
 		r.push_back(p);
 		while (!r.empty())
 		{
-			
+
 			while (!r.empty())
 			{
 
@@ -891,7 +892,7 @@ public:
 					cout << "line 757 p=nullptr";
 					exit(-1);
 				}
-			
+
 
 				if (p->isBpluse == 1)
 				{
@@ -900,7 +901,7 @@ public:
 				}
 			}
 			swap(r, r2);
-			
+
 			cout << endl;
 		}
 	}
@@ -914,20 +915,20 @@ public:
 		}
 		else
 
-		return 0;
+			return 0;
 
 	}
 	bool del(value v)
 	{
-		pair<BNode<data, value>*, int> t=	find(v);
-	BNode<data, value>* p = t.first;
-		
+		pair<BNode<data, value>*, int> t = find(v);
+		BNode<data, value>* p = t.first;
+
 		value ind = t.second;
 		if (p)
 		{
-			
+
 			p->V[ind] = 0;
-			
+
 			delete(p->D[ind]);
 			p->D[ind] = 0;
 			for (int j = ind + 1; j < p->index; j++)
@@ -948,7 +949,7 @@ public:
 					else
 						p->merge_fa();
 				}
-				
+
 			}
 
 
@@ -959,10 +960,10 @@ public:
 	}
 private:
 	int Node_size;
-	BNode<data,value>* root;
-	BNode<data, value>* fro;
+	BNode<data, value> * root;
+	BNode<data, value> * fro;
 
-	BNode<data, value>* beh;
+	BNode<data, value> * beh;
 
 
 
@@ -975,7 +976,7 @@ private:
 int main()
 {
 	//Bplusetree(date, value)
-	
+
 	struct test_data {
 		int a;
 		double b;
@@ -1004,7 +1005,7 @@ int main()
 		p->add(data(), i);
 		p->pprint();
 	}
-	
+
 	p->add(data(), 5);
 	p->pprint();
 	p->add(data(), 8);
@@ -1028,17 +1029,17 @@ int main()
 	p->pprint();
 	p->add(data(), 7);
 	p->pprint();
-	
 
-	
-	
+
+
+
 	p->del(22);
 	p->pprint();
 	p->del(15);
 	p->pprint();
 
 
-	
+
 	p->del(7);
 	p->pprint();
 	p->visit();
@@ -1047,7 +1048,7 @@ int main()
 		p->alter(data(5, 6, "faq", 58), 5);
 		auto cc = p->find(40).second;
 	// int * y=p->find(50);
-	
+
 	return 0;
 }
 */

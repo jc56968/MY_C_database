@@ -3,35 +3,20 @@
 #include<list>
 #include<map>
 #include<memory>
-#include"B+tree.cpp"
-//why not .h
-//B+模板类声明实现放一起
-//why
-//一般类的声明需要在声明中声明所需函数和类成员，再在cpp中C：：A()定义
-//类模板也可以分开声明与定义，但要都写在。h里 问题在于如果把定义写在cpp里，因为模板
-//类与一般类不同只有调用时才会生成装载，如vector<int>：:A和vector<double>：：A是两个函数
-//并不能确定函数具体实例exp 函数可以声明多次，但只有一次定义。模板函数声明多次却可以多次不同的定义，
-//因而再编译模板。cpp时并不会生成对应的.o文件，这样就会在连接时报错，模板函数也是同理
-//如果分开写再调用.h的文件。在编译源。cpp时源
 
+#include"table.h"
 
-//1. 模板实现无法编译为.o文件, 因此无法在链接时做符号解析. 此路不通.
-//2. 编译时, 模板特例匹配, 有无法找到模板实现.此路也不同.
 
 #include<vector>
 #include<string>
 
 using namespace std;
 
-template<  class key,class data>
-class SloT
-{
 
-	using data_pointer=data *;
-	template<class data, class key>
-	friend class table;
-public:
-	SloT(Bplusetree<data, key>* AA)
+
+
+template<  class key, class data>
+SloT<key,data>::SloT(Bplusetree<data, key>* AA)
 	{
 		 
 		
@@ -69,11 +54,13 @@ public:
 			exit(-1);
 		}
 	}
-	void add(data_pointer d, key k)
+template<  class key, class data>
+void SloT<key, data>:: add(data_pointer d, key k)
 	{
 		S->add(d, k);
 	}
-	bool del(key k)
+template<  class key, class data>
+bool SloT<key, data>::del(key k)
 	{
 		if (find(k))
 		{
@@ -82,12 +69,14 @@ public:
 		}
 		return 0;
 	}
-	void alt(data_pointer d, key k)
+template<  class key, class data>
+void SloT<key, data>::alt(data_pointer d, key k)
 	{
 
 		S->alter(d, k);
 	}
-	data* find(key k)
+template<  class key, class data>
+data* SloT<key, data>::find(key k)
 	{
 		data* p = S->get_data(k);
 
@@ -97,35 +86,29 @@ public:
 			return 0;
 
 	}
-	void visit()
+template<  class key, class data>
+void SloT<key, data>::visit()
 	{
 	
 			S->visit();
 		
 	}
-	~SloT()
+template<  class key, class data>
+ SloT<key, data>::~SloT()
 	{
 		delete S;
 	}
-private:
-	Bplusetree<data_pointer, key>* S;
-
-	table< data,  key> *m_key;
 
 
 
-	
-};
 
-
-template<class data,class key>
-class table{
-public:
-	table(int size=5)
+	template<class data, class key>
+	table<data,key>::table(int size)
 	{
 		main_table=new Bplusetree<data, key>(size);
 	}
-	table(int B_size,data *d, key*k,int num)
+	template<class data, class key>
+	table<data, key>::table(int B_size,data *d, key*k,int num)
 	{
 		main_table=	 new Bplusetree<data, key>(B_size)  ;
 	
@@ -134,8 +117,8 @@ public:
 	}
 
 	
-	
-	bool add_slot()
+	template<class data, class key>
+	bool  table<data, key>::add_slot()
 	{
 		SloT<key,data> *D=new SloT< key,data>(this->main_table);
 		if (D)
@@ -147,17 +130,20 @@ public:
 			return 0;
 	}
 	
-	~table()
+	template<class data, class key>
+	  table<data, key>::~table()
 	{
 	//	delete main_table;
 	
 	}
 	
-	void add(data d,key k)
+	  template<class data, class key>
+	  void  table<data, key>::add(data d,key k)
 	{
 		main_table->add( d,k);
 	}
-	bool del(key k)
+	  template<class data, class key>
+	  bool  table<data, key>::del(key k)
 	{
 		if (find(k))
 		{
@@ -166,12 +152,14 @@ public:
 		}
 		return 0;
 	}
-	void alt(data d, key k)
+	template<class data, class key>
+	void table<data, key>::alt(data d, key k)
 	{
 		
 		main_table->alter(d, k);
 	}
-	data * find(key k)
+	template<class data, class key>
+	data *  table<data, key>::find(key k)
 	{
 		data * p=main_table->get_data(k);
 		
@@ -182,18 +170,21 @@ public:
 			
 	}
 
-	
-	SloT<key,data>* get_slot(string a)
+	template<class data, class key>
+	SloT<key, data>* table<data, key>:: get_slot(string a)
 	{
 		
 			return slot_table[a];
 	}
-	vector<data*> visit()
+
+	template<class data, class key>
+	vector<data*>table<data, key>::visit()
 	{
 		return this->main_table->visit();
 
 	}
-	void print_data(vector<data*>& p)
+	template<class data, class key>
+	void table<data, key>::print_data(vector<data*>& p)
 	{
 		
 		cout << "id" << "  " << "name" << "  " << "id2" << "  " << "score" << "  "<<endl;
@@ -203,17 +194,10 @@ public:
 		
 	}
 	}
-private:
-	
-	//vector<pair<int, Bplusetree<data, key>*> > key_slot;
-	//n is the key index of(data) innodb
-	Bplusetree<data, key>  *main_table;
-	
-	map<  string, SloT<  key ,data   >*> slot_table;
 
-
-};
 //extern struct data;
+
+/*
 struct data1
 {
 	int id;
@@ -277,3 +261,4 @@ int main()
 	return 0;
 
 }
+*/
