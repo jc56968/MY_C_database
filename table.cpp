@@ -5,13 +5,12 @@
 #include<memory>
 
 #include"table.h"
-
+#include"B+tree.cpp"
 
 #include<vector>
 #include<string>
 
 using namespace std;
-
 
 
 
@@ -222,23 +221,24 @@ struct data1
 
 };
 
+
 int main()
 {
 
-	data1 *D = new data1(1,1, 80, "k");
+	data1* D = new data1(1, 1, 80, "k");
 	table<data1, int> A(5);
 	int* p = new int(1);
 	table<data1, int> A1();
-	
+
 	for (int i = 1; i <= 21; i++)
 	{
-		A.add(data1(i,i*i+10,(i*i)%100+50,to_string(i)+"class"),i);
+		A.add(data1(i, i * i + 10, (i * i) % 100 + 50, to_string(i) + "class"), i);
 	}
 	vector<data1*> all = A.visit();
 	A.print_data(all);
 	all.clear();
-	data1 *c = A.find(20);
-	A.alt(data1(20,5 ,468, "no_that"),20);
+	data1* c = A.find(20);
+	A.alt(data1(20, 5, 468, "no_that"), 20);
 	all = A.visit();
 	A.print_data(all);
 	all.clear();
@@ -246,15 +246,15 @@ int main()
 	all = A.visit();
 	A.print_data(all);
 	all.clear();
-    c = A.find(20);
+	c = A.find(20);
 	A.visit();
-		
+
 	A.add_slot();
 	auto DD = A.get_slot("id2");
-	
 
-	
-	
+
+
+
 	//del alter change only for main key
 	 //anthor change bu main_slot
 	//SLot must be int 

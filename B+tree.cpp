@@ -5,78 +5,92 @@
 #include<math.h>
 #include<stack>
 #include<vector>
+#include"B+tree.h"
+#include<thread>
+ #include <mutex>    //unique_lock
+ #include <shared_mutex> //shared_mutex shared_lock
+#include <string>
+#include <string.h>
 
-//类模板不同于其他的对象，它的声明与实现不能分开，必须放在同一文件中
 using namespace std;
+static shared_mutex mutex_;
+bool operator>(string a, string b)
+{
+	if (a.size() > b.size())
+		return 1;
+	else if ((a.size() == b.size()))
+		if (a > b)
+			return 1;
+		else
+			return 0;
+	else
+		return 0;
 
+}
+bool operator<(string a, string b)
+{
+	return 1-(a > b);
+}
+template <class data, class value>
+bool BNode<data, value>::merge_bro_bpluse(BNode<data, value>* p, bool left)
+{
+	if (left)
+	{
+		for (int i = 0; i <= father->index; i++)
+			if (father->Slot[i] == p)
+			{
+				V[index] = father->V[i];
+				Slot[index + 1] = p->Slot[p->index];
+				int i;
+				for (i = index; i > 0; i--)
+				{
+					swap(Slot[i + 1], Slot[i]);
+					swap(V[i], V[i - 1]);
+				}
+				swap(Slot[i], Slot[i + 1]);
+				index++;
+
+
+				father->V[i] = p->V[p->index - 1];
+				p->V[p->index - 1] = "";
+				p->Slot[p->index] = 0;
+				p->index--;
+				break;
+			}
+
+	}
+	else
+	{
+		for (int j = 0; j <= father->index; j++)
+			if (father->Slot[j] == this)
+			{
+				V[index] = father->V[j];
+				Slot[index + 1] = p->Slot[0];
+
+				father->V[j] = p->V[0];
+				p->V[0] = "";
+				p->Slot[0] = 0;
+				int i;
+				p->index--;
+				for (i = 0; i < p->index; i++)
+				{
+					swap(p->Slot[i], p->Slot[i + 1]);
+					swap(p->V[i], p->V[i + 1]);
+				}
+				swap(p->Slot[i], p->Slot[i + 1]);
+				index++;
+
+
+
+
+			}
+	}
+	return 0;
+}
 
 
 template <class data, class value>
-class BNode
-{
-	template <typename data, typename value>
-	friend  class SloT;
-	template <typename data, typename value>
-	friend  class table;
-	template <class data, class value>
-	friend class Bplusetree;
-public:
-	bool merge_bro_bpluse(BNode<data, value>* p, bool left)
-	{
-		if (left)
-		{
-			for (int i = 0; i <= father->index; i++)
-				if (father->Slot[i] == p)
-				{
-					V[index] = father->V[i];
-					Slot[index + 1] = p->Slot[p->index];
-					int i;
-					for (i = index; i > 0; i--)
-					{
-						swap(Slot[i + 1], Slot[i]);
-						swap(V[i], V[i - 1]);
-					}
-					swap(Slot[i], Slot[i + 1]);
-					index++;
-
-
-					father->V[i] = p->V[p->index - 1];
-					p->V[p->index - 1] = 0;
-					p->Slot[p->index] = 0;
-					p->index--;
-					break;
-				}
-
-		}
-		else
-		{
-			for (int j = 0; j <= father->index; j++)
-				if (father->Slot[j] == this)
-				{
-					V[index] = father->V[j];
-					Slot[index + 1] = p->Slot[0];
-
-					father->V[j] = p->V[0];
-					p->V[0] = 0;
-					p->Slot[0] = 0;
-					int i;
-					p->index--;
-					for (i = 0; i < p->index; i++)
-					{
-						swap(p->Slot[i], p->Slot[i + 1]);
-						swap(p->V[i], p->V[i + 1]);
-					}
-					swap(p->Slot[i], p->Slot[i + 1]);
-					index++;
-
-
-
-
-				}
-		}
-		return 0;
-	}
-	bool merge_fa_bpluse()
+bool BNode<data, value>::merge_fa_bpluse()
 	{
 		if (fro && fro->father == father)
 		{
@@ -84,7 +98,7 @@ public:
 				if (father->Slot[i] == fro)
 				{
 					fro->V[fro->index] = father->V[i];
-					father->V[i] = 0;
+					father->V[i] = "";
 
 					father->Slot[i + 1] = 0;
 					int j;
@@ -141,7 +155,7 @@ public:
 				if (father->Slot[i] == this)
 				{
 					V[index] = father->V[i];
-					father->V[i] = 0;
+					father->V[i] = "";
 
 					father->Slot[i + 1] = 0;
 
@@ -214,7 +228,9 @@ public:
 		}
 		return 0;
 	}
-	bool merge_bro(BNode<data, value> * p, bool left)
+
+template <class data, class value>
+bool BNode<data, value>::merge_bro(BNode<data, value> * p, bool left)
 	{
 		if (left)
 		{
@@ -225,7 +241,7 @@ public:
 			V[index] = p->V[p->index];
 
 			p->D[p->index] = 0;
-			p->V[p->index] = 0;
+			p->V[p->index] = "";
 			for (int i = 0; i < index; i++)
 			{
 				swap(D[i], D[i + 1]);
@@ -250,7 +266,7 @@ public:
 			V[index] = p->V[0];
 
 			p->D[0] = 0;
-			p->V[0] = 0;
+			p->V[0] ="";
 			for (int i = 0; i < p->index; i++)
 			{
 				swap(p->D[i], p->D[i + 1]);
@@ -265,7 +281,9 @@ public:
 		}
 		return 1;
 	}
-	bool merge_fa()
+
+template <class data, class value>
+bool BNode<data, value>::merge_fa()
 	{
 		if (fro->father == father)
 		{
@@ -280,7 +298,7 @@ public:
 			{
 				if (father->Slot[i] == fro)
 				{
-					father->V[i] = 0;
+					father->V[i] = "";
 					father->Slot[i + 1] = 0;
 					while (i + 1 != father->index)
 					{
@@ -320,7 +338,7 @@ public:
 				{
 					if (father->Slot[i] == this)
 					{
-						father->V[i] = 0;
+						father->V[i] = "";
 						father->Slot[i] = 0;
 						while (i + 1 != father->index)
 						{
@@ -360,7 +378,9 @@ public:
 		return 1;
 	}
 
-	BNode(int Node_size = 5, bool is = 0) :Node_size(Node_size), isBpluse(is)
+
+template <class data, class value>
+BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpluse(is)
 	{
 		if (isBpluse)
 		{
@@ -377,7 +397,8 @@ public:
 		beh = 0;
 		index = 0;
 	}
-	BNode(BNode & A)
+	template <class data, class value>
+	BNode<data, value>::BNode(BNode & A)
 	{
 		BNode* p = new BNode(A.Node_size, A.isBpluse);
 		father = A.father;
@@ -401,11 +422,15 @@ public:
 
 
 	}
-	BNode& operator=(BNode & A)
+	template <class data, class value>
+	BNode<data, value>& BNode<data, value>:: operator=(BNode & A)
 	{
 		cout << "no copy operator" << endl;
 	}
-	int get_insert_index(value v)
+	
+	
+	template <class data, class value>
+	int BNode<data, value>::get_insert_index(value v)
 	{
 		int i = 0;
 		for (i = 0; i < index; i++)
@@ -426,7 +451,8 @@ public:
 		return i;
 	}
 
-	bool add_node(data d, value v)
+	template <class data, class value>
+	bool BNode<data, value>::add_node(data d, value v)
 	{
 		if (index < Node_size)
 		{
@@ -444,7 +470,8 @@ public:
 			return 0;
 
 	}
-	bool add_slot_node(value v, BNode * p, BNode * q)
+	template <class data, class value>
+	bool BNode<data, value>::add_slot_node(value v, BNode * p, BNode * q)
 	{
 
 		if (index < Node_size)
@@ -465,7 +492,8 @@ public:
 			return 0;
 		}
 	}
-	~BNode()
+	template <class data, class value>
+	BNode<data, value>::~BNode()
 	{
 		if (!isBpluse)
 		{
@@ -489,7 +517,8 @@ public:
 		beh = 0;
 
 	}
-	BNode * divide()
+	template <class data, class value>
+	BNode<data, value>* BNode<data, value>:: divide()
 	{
 		if (father == 0)
 		{
@@ -549,7 +578,7 @@ public:
 				if (this->beh)
 					this->beh->fro = p2;
 			}
-			int aim = V[mid];
+			value aim = V[mid];
 			p1->father = this;
 			p2->father = this;
 			this->BNode::BNode(Node_size, 1);
@@ -631,32 +660,13 @@ public:
 		}
 
 	}
-private:
-	data** D;
-	value* V;
-	BNode** Slot;
-	int index;
-	int Node_size;
-	BNode* father;
-	bool isBpluse;
-	BNode* fro;
-	BNode* beh;
-};
 
-template <class data, class value>
-class Bplusetree
-{
-	template <typename data, typename value>
-	friend class table;
 
-	template <typename data, typename value>
-	friend class SloT;
 
-	template <typename data, typename value>
-	friend class BNode;
 
-public:
-	Bplusetree(int Node_size) :Node_size(Node_size)
+
+	template <class data, class value>
+	Bplusetree<data, value>::Bplusetree(int Node_size) :Node_size(Node_size)
 	{
 		root = new BNode<data, value>(Node_size);
 
@@ -664,7 +674,8 @@ public:
 		beh = new BNode<data, value>(Node_size);
 
 	}
-	~Bplusetree()
+	template <class data, class value>
+	Bplusetree<data, value>::~Bplusetree()
 	{
 		stack<BNode<data, value>*> kill;
 		deque<BNode<data, value>*> r;
@@ -723,16 +734,19 @@ public:
 		fro = 0;
 		beh = 0;
 	}
-	Bplusetree(Bplusetree & T)
+	template <class data, class value>
+	Bplusetree<data, value>::Bplusetree(Bplusetree & T)
 	{
-		cout << "no constrcu please use smart pointer";
+		cout << "no copy constrcu "<<endl;
 
 	}
-	data* get_data(BNode<data, value> * p, int ind)
+	template <class data, class value>
+	data* Bplusetree<data, value>::get_data(BNode<data, value> * p, int ind)
 	{
 		return p->D[ind];
 	}
-	data* get_data(value v)
+	template <class data, class value>
+	data* Bplusetree<data, value>::get_data(value v)
 	{
 		auto t = find(v);
 		if (t.first)
@@ -740,10 +754,13 @@ public:
 		else
 			return 0;
 	}
-	pair<BNode<data, value>*, int> find(value v)
+	template <class data, class value>
+	pair<BNode<data, value>*, int> Bplusetree<data, value>::find(value v)
 	{
 		BNode<data, value>* p;
+		shared_lock<shared_mutex> lock(mutex_);
 		p = root;
+	
 		int i;
 		while (1)
 		{
@@ -753,12 +770,14 @@ public:
 				{
 					if (p->isBpluse && p->Slot[i] != 0)
 					{
+						shared_lock<shared_mutex> lock(mutex_);
 						p = p->Slot[i];
 						i = -1;
 
 					}
 					else
 					{
+						shared_lock<shared_mutex> lock(mutex_);
 						for (int j = 0; j < p->index; j++)
 							if (p->V[j] == v)
 								return  pair<BNode<data, value>*, int>(p, j);
@@ -772,13 +791,14 @@ public:
 			{
 				if (p->isBpluse && p->Slot[i] != 0)
 				{
+					shared_lock<shared_mutex> lock(mutex_);
 					p = p->Slot[i];
 					i = -1;
 
 				}
 				else
 				{
-
+					shared_lock<shared_mutex> lock(mutex_);
 					for (int j = 0; j < p->index; j++)
 						if (p->V[j] == v)
 							return  pair<BNode<data, value>*, int>(p, j);
@@ -788,7 +808,8 @@ public:
 		}
 		return pair<BNode<data, value>*, int>(0, 0);
 	}
-	bool add(data d, value v)
+	template <class data, class value>
+	bool Bplusetree<data, value>::add(data d, value v)
 	{
 		BNode<data, value>* p;
 		p = root;
@@ -831,7 +852,8 @@ public:
 		}
 		return 0;
 	}
-	vector<data*> visit()
+	template <class data, class value>
+	vector< data* > Bplusetree<data, value>::visit()
 	{
 		vector<data*> out;
 		BNode<data, value>* p = root;
@@ -858,7 +880,8 @@ public:
 		return out;
 	}
 
-	void pprint()
+	template <class data, class value>
+	void Bplusetree<data, value>::pprint()
 	{
 		deque<BNode<data, value>*> r;
 		deque<BNode<data, value>*> r2;
@@ -905,7 +928,8 @@ public:
 			cout << endl;
 		}
 	}
-	bool alter(data d, value v)
+	template <class data, class value>
+	bool Bplusetree<data, value>::alter(data d, value v)
 	{
 		data* c = get_data(v);
 		if (c != 0)
@@ -918,17 +942,18 @@ public:
 			return 0;
 
 	}
-	bool del(value v)
+	template <class data, class value>
+	bool Bplusetree<data, value>::del(value v)
 	{
 		pair<BNode<data, value>*, int> t = find(v);
 		BNode<data, value>* p = t.first;
 
-		value ind = t.second;
+		int ind = t.second;
 		if (p)
 		{
 
-			p->V[ind] = 0;
-
+			p->V[ind] = "";
+		
 			delete(p->D[ind]);
 			p->D[ind] = 0;
 			for (int j = ind + 1; j < p->index; j++)
@@ -958,16 +983,7 @@ public:
 		else
 			return 0;
 	}
-private:
-	int Node_size;
-	BNode<data, value> * root;
-	BNode<data, value> * fro;
 
-	BNode<data, value> * beh;
-
-
-
-};
 
 
 
