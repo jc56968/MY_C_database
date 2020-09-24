@@ -26,7 +26,7 @@ public:
 		~SloT();
 private:
 	Bplusetree<data_pointer, key>* S;
-	mutable shared_mutex mutex;
+	
 	table< data, key>* m_key;
 };
 

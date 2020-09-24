@@ -14,7 +14,7 @@
 
 using namespace std;
 
-bool operator>(string a, string b)
+bool static operator>(string a, string b)
 {
 	if (a.size() > b.size())
 		return 1;
@@ -27,7 +27,7 @@ bool operator>(string a, string b)
 		return 0;
 
 }
-bool operator<(string a, string b)
+bool static operator<(string a, string b)
 {
 	return 1-(a > b);
 }
@@ -825,9 +825,10 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 	bool Bplusetree<data, value>::add(data d, value v)
 	{
 		BNode<data, value>* p;
-		stack<unique_lock< shared_mutex > >v_lock;
-		v_lock.push(unique_lock< shared_mutex >);
-		v_lock.top().lock(root->mutex);
+		stack<int >v_lock;
+		v_lock.push(1);
+		unique_lock< shared_mutex > lock(root->mutex);
+		
 		p = root;
 		int i;
 		while (1)
@@ -838,27 +839,29 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 				{
 					if (p->isBpluse && p->Slot[i] != 0)
 					{
-						unique_lock< shared_mutex > temp;
-						temp.lock(p->Slot[i]->mutex);
+						
+						unique_lock< shared_mutex > lock(p->Slot[i]->mutex);
+						
 						if (p->getsize() >= Node_size - 1)
 						{
-							
-							v_lock.push(std::move(temp));
-
+							v_lock.push(1);
 						}
 						else
 						{
-							//=crabbing stratege
-							while (!v_lock.empty())
-							{
-								v_lock.top().unlock();
-								v_lock.pop();
-							}
-							v_lock.push(std::move(temp));
+							//=crabbing stratege.
+							BNode<data, value>* q = p;
 							
 
+							while (!v_lock.empty())
+							{
+								q->retwritep();
+								v_lock.pop();
+								q = q->father;
+							}
+							v_lock.push(1);
+
 						}
-				
+						
 						
 						
 						
@@ -871,6 +874,15 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 					{
 
 						p->add_node(d, v);
+						BNode<data, value>* q = p;
+
+
+						while (!v_lock.empty())
+						{
+							q->retwritep();
+							v_lock.pop();
+							q = q->father;
+						}
 						return 1;
 					}
 				}
@@ -881,26 +893,31 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 				if (p->isBpluse && p->Slot[i] != 0)
 				{
 					//=crabbing stratege
-					unique_lock< shared_mutex > temp;
-					temp.lock(p->Slot[i]->mutex);
+					
+					
+					unique_lock< shared_mutex > lock(p->Slot[i]->mutex);
+
 					if (p->getsize() >= Node_size - 1)
 					{
-
-						v_lock.push(std::move(temp));
-
+						v_lock.push(1);
 					}
 					else
 					{
-						
+						//=crabbing stratege.
+						BNode<data, value>* q = p;
+
+
 						while (!v_lock.empty())
 						{
-							v_lock.top().unlock();
+							q->retwritep();
 							v_lock.pop();
+							q = q->father;
 						}
-						v_lock.push(std::move(temp));
-
+						v_lock.push(1);
 
 					}
+
+
 					p = p->Slot[i];
 					i = -1;
 
@@ -909,10 +926,27 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 				{
 
 					p->add_node(d, v);
+					BNode<data, value>* q = p;
+
+
+					while (!v_lock.empty())
+					{
+						q->retwritep();
+						v_lock.pop();
+						q = q->father;
+					}
 					return 1;
 				}
 			}
 		}
+		BNode<data, value>* q = p;
+
+		while (!v_lock.empty())
+		{
+			q->retwritep();
+			v_lock.pop();
+			q = q->father;
+		} 
 		return 0;
 	}
 	template <class data, class value>
@@ -1006,9 +1040,9 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 	{
 
 
-		stack<unique_lock< shared_mutex > >v_lock;
-		v_lock.push(unique_lock< shared_mutex >);
-		v_lock.top().lock(root->mutex);
+		stack<int >v_lock;
+		v_lock.push(1);
+		root->getwritep();
 		BNode<data, value>* p;
 
 		p = root;
@@ -1022,21 +1056,24 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 				{
 					if (p->isBpluse && p->Slot[i] != 0)
 					{
-						unique_lock< shared_mutex > temp;
-						temp.lock(p->Slot[i]->mutex);
+						p->Slot[i]->getwritep();
+						
 						if (p->index < p->Node_size - 2)
 						{
+							BNode<data, value>* q = p;
 							while (!v_lock.empty())
 							{
-								v_lock.top().unlock();
+								
 								v_lock.pop();
+								p->retwritep();
+								p = p->father;
 
 							}
-							v_lock.push(std::move(temp));
+							v_lock.push(1);
 						}
 						else
 						{
-							v_lock.push(std::move(temp));
+							v_lock.push(1);
 						}
 						
 
@@ -1063,21 +1100,25 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 			{
 				if (p->isBpluse && p->Slot[i] != 0)
 				{
-					unique_lock< shared_mutex > temp;
-					temp.lock(p->Slot[i]->mutex);
+					p->Slot[i]->getwritep();
+					
+					
 					if (p->index < p->Node_size - 2)
 					{
+						BNode<data, value>* q = p;
 						while (!v_lock.empty())
 						{
-							v_lock.top().unlock();
+
 							v_lock.pop();
+							p->retwritep();
+							p = p->father;
 
 						}
-						v_lock.push(std::move(temp));
+						v_lock.push(1);
 					}
 					else
 					{
-						v_lock.push(std::move(temp));
+						v_lock.push(1);
 					}
 
 					

@@ -18,7 +18,7 @@ template<  class key, class data>
 SloT<key,data>::SloT(Bplusetree<data, key>* AA)
 	{
 		 
-		
+	using datapointer=data *;
 		Bplusetree<data, key>* main_table = AA;
 		if (main_table)
 		{
@@ -26,11 +26,12 @@ SloT<key,data>::SloT(Bplusetree<data, key>* AA)
 			BNode<data, key>* p = main_table->root;
 
 
-			S = new Bplusetree<data_pointer, key>(main_table->Node_size);
+			S = new Bplusetree< datapointer, key>(main_table->Node_size);
 			while (p)
 			{
 				if (p->isBpluse)
 				{
+				
 					p = p->Slot[0];
 				}
 				else
@@ -38,10 +39,13 @@ SloT<key,data>::SloT(Bplusetree<data, key>* AA)
 
 					while (p != 0)
 					{
-
+						p->getreadp();
 						for (int i = 0; i < p->index; i++)
 							S->add(p->D[i], p->D[i]->id2);
+						if(p->beh!=0)
+				
 						p = p->beh;
+						p->retreadp();
 					}
 
 				}
@@ -77,10 +81,10 @@ void SloT<key, data>::alt(data_pointer d, key k)
 template<  class key, class data>
 data* SloT<key, data>::find(key k)
 	{
-		data* p = S->get_data(k);
+		data** p = S->get_data(k);
 
-		if (p)
-			return p;
+		if (*p)
+			return *p;
 		else
 			return 0;
 
@@ -97,8 +101,6 @@ template<  class key, class data>
 	{
 		delete S;
 	}
-
-
 
 
 	template<class data, class key>

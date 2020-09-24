@@ -1,7 +1,7 @@
 #pragma
 #include<iostream>
-#include"table.h"
-#include"table.cpp"
+#include<table.h>
+#include<table.cpp>
 #include<set>
 #include<map>
 #include<string>
@@ -200,7 +200,7 @@ struct SELECT
 				else 
 				{
 					
-					T.push_back(set_table[table].slot_table.find[condition].find(cv));
+					T.push_back(    set_table[table].get_slot(condition)->find(cv) );
 				}
 				if (T[0] == 0)
 				{
@@ -489,7 +489,7 @@ struct UPDATE
 				else
 				{
 
-					T.push_back(   set_table[table].slot_table.find[condition].find(cv)   );
+					T.push_back(set_table[table].get_slot(condition)->find(cv));
 				}
 				if (T[0] == 0)
 				{
@@ -612,7 +612,8 @@ struct DELETE
 
 		vector<data2*>T = S.T;
 		if (T[0] != 0)
-			set_table[S.table].del(T[0]->d[T[0]->find_col[T[0]->getmkey()]]);
+			
+			set_table[S.table].del(T[0]->d[    T[0]->find_col(T[0]->getmkey())  ]);
 	}
 };
 
