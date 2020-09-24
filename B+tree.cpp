@@ -13,7 +13,7 @@
 #include <string.h>
 
 using namespace std;
-static shared_mutex mutex_;
+
 bool operator>(string a, string b)
 {
 	if (a.size() > b.size())
@@ -737,7 +737,7 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 	template <class data, class value>
 	Bplusetree<data, value>::Bplusetree(Bplusetree & T)
 	{
-		cout << "no copy constrcu "<<endl;
+		cout << "no copy constrcu and can't be copy"<<endl;
 
 	}
 	template <class data, class value>
@@ -758,8 +758,8 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 	pair<BNode<data, value>*, int> Bplusetree<data, value>::find(value v)
 	{
 		BNode<data, value>* p;
-		shared_lock<shared_mutex> lock(mutex_);
-		p = root;
+		
+		p = root->getreadp();
 	
 		int i;
 		while (1)
@@ -770,17 +770,24 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 				{
 					if (p->isBpluse && p->Slot[i] != 0)
 					{
-						shared_lock<shared_mutex> lock(mutex_);
+						
+							p->Slot[i]->getreadp();
+							p->retreadp();
+						
 						p = p->Slot[i];
+						
 						i = -1;
 
 					}
 					else
 					{
-						shared_lock<shared_mutex> lock(mutex_);
 						for (int j = 0; j < p->index; j++)
 							if (p->V[j] == v)
+							{
+								p->retreadp();
 								return  pair<BNode<data, value>*, int>(p, j);
+							}
+						p->retreadp();
 						return  pair<BNode<data, value>*, int>(0, 0);
 
 					}
@@ -790,28 +797,37 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 			if (i == p->index)
 			{
 				if (p->isBpluse && p->Slot[i] != 0)
-				{
-					shared_lock<shared_mutex> lock(mutex_);
+				{	
+					p->Slot[i]->getreadp();
+					p->retreadp();
 					p = p->Slot[i];
 					i = -1;
 
 				}
 				else
 				{
-					shared_lock<shared_mutex> lock(mutex_);
+					
 					for (int j = 0; j < p->index; j++)
 						if (p->V[j] == v)
+						{
+							p->retreadp();
 							return  pair<BNode<data, value>*, int>(p, j);
+						}
+					p->retreadp();
 					return  pair<BNode<data, value>*, int>(0, 0);
 				}
 			}
 		}
+		p->retreadp();
 		return pair<BNode<data, value>*, int>(0, 0);
 	}
 	template <class data, class value>
 	bool Bplusetree<data, value>::add(data d, value v)
 	{
 		BNode<data, value>* p;
+		stack<unique_lock< shared_mutex > >v_lock;
+		v_lock.push(unique_lock< shared_mutex >);
+		v_lock.top().lock(root->mutex);
 		p = root;
 		int i;
 		while (1)
@@ -822,12 +838,38 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 				{
 					if (p->isBpluse && p->Slot[i] != 0)
 					{
-						p = p->Slot[i];
-						i = -1;
+						unique_lock< shared_mutex > temp;
+						temp.lock(p->Slot[i]->mutex);
+						if (p->getsize() >= Node_size - 1)
+						{
+							
+							v_lock.push(std::move(temp));
+
+						}
+						else
+						{
+							//=crabbing stratege
+							while (!v_lock.empty())
+							{
+								v_lock.top().unlock();
+								v_lock.pop();
+							}
+							v_lock.push(std::move(temp));
+							
+
+						}
+				
+						
+						
+						
+							p = p->Slot[i];
+							i = -1;
+						
 
 					}
 					else
 					{
+
 						p->add_node(d, v);
 						return 1;
 					}
@@ -838,6 +880,27 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 			{
 				if (p->isBpluse && p->Slot[i] != 0)
 				{
+					//=crabbing stratege
+					unique_lock< shared_mutex > temp;
+					temp.lock(p->Slot[i]->mutex);
+					if (p->getsize() >= Node_size - 1)
+					{
+
+						v_lock.push(std::move(temp));
+
+					}
+					else
+					{
+						
+						while (!v_lock.empty())
+						{
+							v_lock.top().unlock();
+							v_lock.pop();
+						}
+						v_lock.push(std::move(temp));
+
+
+					}
 					p = p->Slot[i];
 					i = -1;
 
@@ -856,11 +919,13 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 	vector< data* > Bplusetree<data, value>::visit()
 	{
 		vector<data*> out;
-		BNode<data, value>* p = root;
+		
+		BNode<data, value>* p = root->getreadp();
 		while (p)
 		{
 			if (p->isBpluse)
 			{
+			
 				p = p->Slot[0];
 			}
 			else
@@ -871,11 +936,18 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 					{
 						cout << p->V[i] << " ";
 						out.push_back(p->D[i]);
-					}					p = p->beh;
+						{
+						
+							p->beh->getreadp();
+							p->retreadp();
+					    	p = p->beh;
+						}
+				    }
 				}
 
 			}
 		}
+		p->retreadp();
 		cout << endl;
 		return out;
 	}
@@ -928,24 +1000,136 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 			cout << endl;
 		}
 	}
+
+	template <class data, class value>
+	pair<BNode<data, value>*, int> Bplusetree<data, value>::find_for_del(value v)
+	{
+
+
+		stack<unique_lock< shared_mutex > >v_lock;
+		v_lock.push(unique_lock< shared_mutex >);
+		v_lock.top().lock(root->mutex);
+		BNode<data, value>* p;
+
+		p = root;
+
+		int i;
+		while (1)
+		{
+			for (i = 0; i < p->index; i++)
+			{
+				if (v < p->V[i])
+				{
+					if (p->isBpluse && p->Slot[i] != 0)
+					{
+						unique_lock< shared_mutex > temp;
+						temp.lock(p->Slot[i]->mutex);
+						if (p->index < p->Node_size - 2)
+						{
+							while (!v_lock.empty())
+							{
+								v_lock.top().unlock();
+								v_lock.pop();
+
+							}
+							v_lock.push(std::move(temp));
+						}
+						else
+						{
+							v_lock.push(std::move(temp));
+						}
+						
+
+						p = p->Slot[i];
+						i = -1;
+
+					}
+					else
+					{
+						for (int j = 0; j < p->index; j++)
+							if (p->V[j] == v)
+							{
+								
+								return  pair<BNode<data, value>*, int>(p, j);
+							}
+						
+						return  pair<BNode<data, value>*, int>(0, 0);
+
+					}
+				}
+			}
+
+			if (i == p->index)
+			{
+				if (p->isBpluse && p->Slot[i] != 0)
+				{
+					unique_lock< shared_mutex > temp;
+					temp.lock(p->Slot[i]->mutex);
+					if (p->index < p->Node_size - 2)
+					{
+						while (!v_lock.empty())
+						{
+							v_lock.top().unlock();
+							v_lock.pop();
+
+						}
+						v_lock.push(std::move(temp));
+					}
+					else
+					{
+						v_lock.push(std::move(temp));
+					}
+
+					
+					p = p->Slot[i];
+					i = -1;
+
+				}
+				else
+				{
+
+					for (int j = 0; j < p->index; j++)
+						if (p->V[j] == v)
+						{
+							
+							return  pair<BNode<data, value>*, int>(p, j);
+						}
+					
+					return  pair<BNode<data, value>*, int>(0, 0);
+				}
+			}
+		}
+	
+		return pair<BNode<data, value>*, int>(0, 0);
+	}
 	template <class data, class value>
 	bool Bplusetree<data, value>::alter(data d, value v)
 	{
+
+		auto t = find(v);
+		t.first->getwritep();
+		if (t.first)
+			return get_data(t.first, t.second);
+		else
+			return 0;
 		data* c = get_data(v);
 		if (c != 0)
 		{
 			*c = d;
+			t.first->retwritep();
 			return 1;
 		}
 		else
-
+		{
+			t.first->retwritep();
 			return 0;
+		}
 
 	}
 	template <class data, class value>
 	bool Bplusetree<data, value>::del(value v)
 	{
-		pair<BNode<data, value>*, int> t = find(v);
+		pair<BNode<data, value>*, int> t = find_for_del(v);
 		BNode<data, value>* p = t.first;
 
 		int ind = t.second;

@@ -1,7 +1,7 @@
 #pragma
 #include<iostream>
-#include<table.h>
-#include<table.cpp>
+#include"table.h"
+#include"table.cpp"
 #include<set>
 #include<map>
 #include<string>

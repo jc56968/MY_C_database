@@ -6,6 +6,9 @@
 #include<math.h>
 #include<stack>
 #include<vector>
+#include<thread>
+#include <mutex>    //unique_lock
+#include <shared_mutex> //shared_mutex shared_lock
 using namespace std;
 template <class data, class value>
  class table;
@@ -25,7 +28,31 @@ template <class data, class value>
 	
 	friend  class Bplusetree<data, value>;
 public:
-
+	int getsize()
+	{
+		
+			return index;
+	}
+	BNode* getreadp()
+	{
+		mutex.lock_shared();
+		return this;
+	}
+	BNode* retreadp()
+	{
+		mutex.unlock_shared();
+		return this;
+	}
+	BNode* getwritep()
+	{
+		mutex.lock();
+		return this;
+	}
+	BNode* retwritep()
+	{
+		mutex.unlock();
+		return this;
+	}
 	bool merge_bro_bpluse(BNode<data, value>* p, bool left);
 	bool merge_fa_bpluse();
 	bool merge_bro(BNode<data, value>* p, bool left);
@@ -48,6 +75,8 @@ private:
 	bool isBpluse;
 	BNode* fro;
 	BNode* beh;
+	mutable	shared_mutex  mutex;
+
 	
 };
 
@@ -62,6 +91,8 @@ class Bplusetree
 	friend  class Bplusetree<data, value>;
 	// friend   table:: add_clust_slot(int );
 public:
+	
+	pair<BNode<data, value>*, int> find_for_del(value v);
 	Bplusetree(int Node_size);
 	~Bplusetree();
 	Bplusetree(Bplusetree& T);
