@@ -14,15 +14,22 @@
 
 using namespace std;
 
+bool static operator==(string a, string b)
+{
+	return std::operator==(a,b);
+}
 bool static operator>(string a, string b)
 {
 	if (a.size() > b.size())
 		return 1;
 	else if ((a.size() == b.size()))
-		if (a > b)
+	{
+		if ( std::operator>(a,b) )
 			return 1;
+	
 		else
 			return 0;
+	}
 	else
 		return 0;
 
@@ -827,7 +834,7 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 		BNode<data, value>* p;
 		stack<int >v_lock;
 		v_lock.push(1);
-		unique_lock< shared_mutex > lock(root->mutex);
+		root->getwritep();
 		
 		p = root;
 		int i;
@@ -935,7 +942,7 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 						v_lock.pop();
 						q = q->father;
 					}
-					return 1;
+					break;
 				}
 			}
 		}
@@ -959,8 +966,13 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 		{
 			if (p->isBpluse)
 			{
-			
-				p = p->Slot[0];
+				if (p->Slot[0])
+				{
+					p->Slot[0]->getreadp();
+				}
+					p->retreadp();
+					p = p->Slot[0];
+				
 			}
 			else
 			{
@@ -968,21 +980,23 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 				{
 					for (int i = 0; i < p->index; i++)
 					{
-						cout << p->V[i] << " ";
+						//cout << p->V[i] << " ";
 						out.push_back(p->D[i]);
-						{
+					}
 						
+						   if(p->beh)
 							p->beh->getreadp();
 							p->retreadp();
 					    	p = p->beh;
-						}
-				    }
+						
+				    
 				}
 
 			}
 		}
-		p->retreadp();
-		cout << endl;
+		
+		//p->retreadp();
+	//	cout << endl;
 		return out;
 	}
 
@@ -1086,10 +1100,25 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 						for (int j = 0; j < p->index; j++)
 							if (p->V[j] == v)
 							{
-								
-								return  pair<BNode<data, value>*, int>(p, j);
+								pair<BNode<data, value>*, int> tt(p, j);
+								while (!v_lock.empty())
+								{
+
+									v_lock.pop();
+									p->retwritep();
+									p = p->father;
+
+								}
+								return tt;
 							}
-						
+						while (!v_lock.empty())
+						{
+
+							v_lock.pop();
+							p->retwritep();
+							p = p->father;
+
+						}
 						return  pair<BNode<data, value>*, int>(0, 0);
 
 					}
@@ -1133,9 +1162,26 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 						if (p->V[j] == v)
 						{
 							
-							return  pair<BNode<data, value>*, int>(p, j);
+							 pair<BNode<data, value>*, int> tt(p, j);
+							 while (!v_lock.empty())
+							 {
+
+								 v_lock.pop();
+								 p->retwritep();
+								 p = p->father;
+
+							 }
+							 return tt;
 						}
 					
+					while (!v_lock.empty())
+					{
+
+						v_lock.pop();
+						p->retwritep();
+						p = p->father;
+
+					}
 					return  pair<BNode<data, value>*, int>(0, 0);
 				}
 			}

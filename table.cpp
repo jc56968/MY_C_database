@@ -141,7 +141,13 @@ template<  class key, class data>
 	  template<class data, class key>
 	  void  table<data, key>::add(data d,key k)
 	{
+		  if (find(k))
+		  {
+			  cout << "THERE IS A ITEM MAIN_KEY=" << k<<"   ";
+		  }
+		  else
 		main_table->add( d,k);
+		  
 	}
 	  template<class data, class key>
 	  bool  table<data, key>::del(key k)
@@ -150,6 +156,10 @@ template<  class key, class data>
 		{
 			main_table->del(k);
 			return 1;
+		}
+		else
+		{
+			cout << "no find delect item" << endl;
 		}
 		return 0;
 	}

@@ -10,8 +10,10 @@
 #include <functional>
 #include<algorithm>
 using namespace std;
-struct data2
+int startsql();
+class data2
 {
+public:
 	static void creat_table(vector<string>& A, string m_k)
 	{
 		creat_data2(A, m_k);
@@ -74,12 +76,14 @@ struct data2
 	void pprint_name()
 	{
 		for (int i = 0; i < name.size(); i++)
-			cout << name[i] << "    " << endl;
+			cout << name[i] << "    " ;
+		cout << endl;
 	}
 	void pprint()
 	{
 		for (int i = 0; i < name.size(); i++)
-			cout << d[i] << " " << endl;
+			cout << d[i] << " ";
+		cout << endl;
 	}
 	static string getmkey()
 	{
@@ -90,7 +94,10 @@ struct data2
 	{
 		return size;
 	}
-
+	static vector<string> getcol()
+	{
+		return name;
+	}
 private:
 	static string mkey;
 	static int size;
@@ -115,9 +122,10 @@ private:
 map<string, table<data2, string>> set_table;
 struct SELECT
 {
-	SELECT(string a)
+	SELECT(stringstream &s)
 	{
-		stringstream s(a);
+		string a;
+		
 		while (s >> a)
 		{
 			if (a == "SELECT")
@@ -134,10 +142,12 @@ struct SELECT
 			{
 				s >> a;
 			
-				string con(a, 0, condition.find("=")-1);
+				string con(a, 0, a.find("="));
 				condition = con;
-			   con=(a, condition.find("=") + 1, condition.size()-1);
-				cv = con;
+				
+				string con2(a, a.find("=")+1, a.size());
+			  
+				cv = con2;
 			}
 			
 		}
@@ -150,28 +160,32 @@ struct SELECT
 	bool check()
 	{
 		//check table
-		if (set_table.find(table) == set_table.find(table))
+
+		if (set_table.find(table) == set_table.end())
 		{
 			cout << "there is no input table" << endl;
 			return 0;
 		}
 		//check condition
 	
-		if (data2::find_col(condition) == -1)
+		if (condition !=""&&data2::find_col(condition) == -1)
 		{
 			cout << "there is no input condition" << endl;
 			return 0;
 		}
 		//check selectwhat
 		string con = select_what;
-		con.replace(con.begin(),con.end(), ',', ' ');
-		stringstream s(con);
-		while (s >> con)
+		if (con != "*")
 		{
-			if (data2::find_col(con) == -1)
+			con.replace(con.begin(), con.end(), ',', ' ');
+			stringstream s(con);
+			while (s >> con)
 			{
-				cout << "there is no input select_aim" << endl;
-				return 0;
+				if (data2::find_col(con) == -1)
+				{
+					cout << "there is no input select_aim" << endl;
+					return 0;
+				}
 			}
 		}
 		return 1;
@@ -181,7 +195,7 @@ struct SELECT
 	vector<data2*>  exesql()
 	{
 		vector<data2*> T;
-		if (condition == ""&&select_what=="*")
+		if (condition == "")
 		{
 			T = set_table[table].visit();
 			return T;
@@ -249,11 +263,30 @@ struct SELECT
 			return T;
 		else
 		{
+		
 			T[0]->pprint_name();
 			if (select_what == "*")
-				for(int i=0;i<T.size();i++)
-					if(T[0]!=0)
-				   T[0]->pprint();
+			{
+				
+				for (int i = 0; i < T.size(); i++)
+					if (T[i] != 0)
+						T[i]->pprint();
+			}
+			else
+			{
+				
+				
+				for (int i = 0; i < T.size(); i++)
+					if (T[i] != 0)
+					{
+						string c = "";
+						c += (*T[i]).d[data2::find_col(select_what)];
+						
+						cout << c << endl;
+					}
+			
+
+			}
 		}
 		return T;
 	}
@@ -281,9 +314,10 @@ struct INSERT
 		INSERT INTO table_name(column1, column2, column3, ...)
 		VALUES(value1, value2, value3, ...);
 		*/
-	INSERT(string a)
+	INSERT(stringstream &s)
 	{
-		stringstream s(a);
+		string a;
+		
 		while (s >> a)
 		{
 			if (a == "VALUES")
@@ -293,7 +327,7 @@ struct INSERT
 				replace(a.begin(), a.end(), '(', ' ');
 				replace(a.begin(), a.end(), ')', ' ');
 				s.clear();
-				s << a;
+				s .str(a);
 				while (s >> a)
 				{
 					insert_what.push_back(a);
@@ -306,6 +340,17 @@ struct INSERT
 			{
 				s >> a;
 				table = a;
+				s >> a;
+				if (a[0] == 'V')
+				{
+					string b;
+					s >> b;
+					s.clear();
+					s.str(a+" "+b);
+					
+					continue;
+				
+				}
 				if (a.find(','))
 				{
 					table = (a, 0, a.find('('));
@@ -329,12 +374,13 @@ struct INSERT
 	bool check()
 	{
 		//check table
-		if (set_table.find(table) == set_table.find(table))
+		if (set_table.find(table) == set_table.end())
 		{
 			cout << "there is no input table" << endl;
 			return 0;
 		}
 		//check condition
+		
 		for(string condition: insert_cond)
 		if (data2::find_col(condition) == -1)
 		{
@@ -354,10 +400,11 @@ struct INSERT
 
 
 	}
-	vector<data2*>exeq()
+	void exeq()
 	{
-		if (insert_cond.size() == 0)
+		if (insert_cond.size() != 0)
 		{
+			
 			string v;
 			if ( data2::find_col(data2::getmkey()) == -1)
 			{
@@ -385,7 +432,7 @@ struct INSERT
 			data2 tt(insert_what);
 			set_table[table].add(tt, va);
 		}
-
+		cout << "INSERT OK" << endl;
 	}
 		//	print(exesql());
 
@@ -429,12 +476,13 @@ struct UPDATE
 
 
 	}
-	vector<string> pre_print(vector<data2*>T)
+	vector<data2*> pre_print(vector<data2*>T)
 	{
 		T[0]->pprint_name();
 		for (int i = 0; i < T.size(); i++)
 			if (T[i] != 0)
 				T[i]->pprint();
+		return T;
 	}
 	bool check()
 	{
@@ -547,30 +595,43 @@ struct CREATE
 	/*
 	CREATE TABLE 表名称
 	(
-		列名称1 数据类型,
+		primary_key 列名称1 数据类型,
 		列名称2 数据类型,
-		列名称3 数据类型,
+		列名称3 数据类型
+		)
+		....
+	)
+	CREATE TABLE class
+	(
+		primary_key id int,
+		name string,
+		score double
+		)
+		INSERT INTO 表名称 VALUES (值1, 值2,....)
 		....
 	)
 	*/
-	CREATE(string A)
+	CREATE(stringstream & s)
 	{
 		
-		stringstream s(A);
-		while (s >> A);
+		string A;
+	
+		while ( s>>A )
 		{
+			s >> A;
 			if (A == "TABLE")
 			{
 				s >> A;
 				tablename = A;
 			}
+			
 		}
 		string B;
 		string C;
 		do 
 		{
 			cin >> A;
-			if (A != "(")
+			if (A != "("&& A != ")")
 			{
 				cin >> B;
 				if (A == "primary_key")
@@ -592,189 +653,276 @@ struct CREATE
 					col_type.push_back(B);
 				}
 			}
-		} while (A == ")");
+		} while (A != ")");
+		if(m_k == "")
+			m_k = col[0];
 		data2::creat_table(col, m_k);
 	   table<data2, string> tt(5);
 		set_table[tablename] = tt;
+		cout << "CREATE OK" << endl;
 	}
 
-	string tablename="";
-	string m_k="";
+	string tablename;
+	string m_k;
 	vector<string> col;
 	vector<string> col_type;
 
 };
 struct DELETE
 {
-	DELETE(string A)
+	DELETE(stringstream &s)
 	{
-		SELECT S(A);
 
-		vector<data2*>T = S.T;
-		if (T[0] != 0)
-			
-			set_table[S.table].del(T[0]->d[    T[0]->find_col(T[0]->getmkey())  ]);
+		string a;
+
+		while (s >> a)
+		{
+			 if (a == "FROM")
+			{
+				s >> a;
+				table = a;
+			}
+			else if (a == "WHERE")
+			{
+				s >> a;
+
+				string con(a, 0, a.find("="));
+				condition = con;
+
+				string con2(a, a.find("=") + 1, a.size());
+
+				cv = con2;
+			}
+
+		}
+		if (check())
+
+			T = exesql();
+
+
 	}
+	bool check()
+	{
+		//check table
+		if (set_table.find(table) == set_table.end())
+		{
+			cout << "there is no input table" << endl;
+			return 0;
+		}
+		//check condition
+
+		if (condition != "" && data2::find_col(condition) == -1)
+		{
+			cout << "there is no input condition" << endl;
+			return 0;
+		}
+		//check selectwhat
+		
+		
+		return 1;
+
+
+	}
+	vector<data2*>  exesql()
+	{
+		vector<data2*> T;
+		if (condition == "")
+		{
+			T = set_table[table].visit();
+			for (auto u : T)
+			{
+				string key = string(  (*u).d[(*u).find_col(  (*u).getmkey() )   ]     );
+				set_table[table].del(key);
+			}
+			return T;
+		}
+		else
+		{
+			if (set_table[table].slot_table.find(condition) != set_table[table].slot_table.end()
+				|| condition == data2::getmkey())
+			{
+				cout << " using slot" << endl;
+				if (condition == data2::getmkey())
+				{
+
+					
+					set_table[table].del(cv);
+					cout << "DELETE OK" << endl;
+				}
+				else
+				{
+
+					set_table[table].get_slot(condition)->del(cv);
+					cout << "DELETE OK" << endl;
+				}
+				
+					return T;
+			
+			
+			}
+			else
+			{
+				vector<data2*> W;
+				cout << "no hit slot using visit" << endl;
+				T = set_table[table].visit();
+				int i;
+				for (i = 0; i < T.size(); i++)
+				{
+					int ind = data2::find_col(condition);
+					if (T[i]->d[ind] == cv);
+					{
+						set_table[table].del((*T[i]).d[(*T[i]).find_col((*T[i]).getmkey())]);
+
+	
+						
+					}
+				}
+				cout << "DELETE OK" << endl;
+
+
+			}
+		}
+
+	}
+	
+		
+			
+	
+
+			
+		
+					
+		
+
+		
+	
+
+	string select_what = "";
+	string table = "";
+	string where;
+	string having;
+	string limit;
+	string condition = "";
+	string cv = "";
+	vector<data2*> T;
+
+		
+	
 };
 
 
 
 
-/*
-void add(vector<string> &sql)
-{
-	if (set_table.find(sql[2]) != set_table.end())
-	{
-		try
-		{
-			data2 t(sql[sql.size()-1]);
-			set_table[sql[2]].add(t, sql[4]);
-			cout << "insert scuess" << endl;
-		}
-		catch (string a)
-		{
-			if (a == "wro")
-				return;
-		}
-		
-	}
-	else
-	{
-		cout << "invalid table" << endl;
-	}
-
-}
-void del(vector<string>& sql)
-{
-	if (set_table.find(sql[2]) != set_table.end())
-	{	
-		set_table[sql[2]].del((sql[6]));
-		cout << "delete scuess"<<endl;
-	}
-	else
-	{
-		cout << "invalid table" << endl;
-	}
-}
-void ins(vector<string>& sql) 
-{
-	add(sql);
-}
-void find(vector<string>& sql)
-{
-	if (set_table.find(sql[3]) != set_table.end())
-	{
-		if (data1::find_col(sql[5])>=0)
-		{
-			if (set_table[sql[3]].slot_table.find(sql[5]) != set_table[sql[3]].slot_table.end()
-				|| data1::find_col(sql[5])==0)
-			{
-				cout << "search by index " << sql[5] << endl;
-				if (data1::find_col(sql[5]) != 0)
-				{
-					//(set_table[sql[3]].slot_table[sql[5]]).find(stoi(sql[5]));
-				}
-				else
-					//set_table[sql[3]].find(stoi(sql[sql.size() - 1]))->pprint();
-
-				cout << "search scuess" << endl;
-			}
-			else
-			{
-				cout << "search by number " << endl;
-				auto A = set_table[sql[3]].visit();
-				for (int i = 0; i < A.size(); i++)
-				{
-					//
-					//visut find(A)
-					//
-
-				}
-			}		
-			
-		}
-		else
-		{
-			cout << "wrong find col";
-		}
-
-		
-	}
-	else
-	{
-		cout << "invalid table" << endl;
-	}
-}
-void alt(vector<string>& sql)
-{
-	if (set_table.find(sql[2]) != set_table.end())
-	{
-		set_table[sql[2]].alt(data2(),sql[sql.size()-1]);
-		cout << "alt scuess" << endl;
-	}
-	else
-	{
-		cout << "invalid table" << endl;
-	}
-}
-void creat(string sql)
-{
-
-}
-*/
+int data2::size = 0;
+string data2::mkey= "";
+vector<string> data2::name ;
 int main()
+{
+	startsql();
+	
+	return 0;
+	/*
+	thread t1(startsql());
+	thread t2(startsql());
+	thread t3(startsql());
+	thread t4();
+	t1.join();
+	t2.join();
+	t3.join();
+	t4.join();
+	*/
+	
+}
+int startsql()
 {
 
 	vector<string> sql;
-	table<data2, string> A(5);
-	set_table["A"] = A;
+	//table<data2, string> A(5);
+	//set_table["A"] = A;
+	stringstream S;
 	while (1)
 	{
 		sql.clear();
 		cout << "please input sql" << endl;
 		
-		string C;
+		string C,d;
 		getline(cin, C);
+		d = C;
 		if (C == "exit()")
 			exit(0);
-		stringstream S(C);
+		S.clear();
+		 S.str(C);
 		while (S >> C)
 		{
 			sql.push_back(C);
 		}
 	
-		if (0)
+		if (sql.empty())
 		{
+			
 		}
 		else
 		{
 			if (sql[0] == "CREATE")
 			{
-				//creat(sql);
-				//select * FROM A where id = 1
+				stringstream e(d);
+				CREATE a(  e  );
+				/*
+				CREATE TABLE class
+					(
+						primary_key id int,
+						name string,
+						score double
+						)
+
+	INSERT INTO class VALUES (5,tom,32)
+
+					INSERT INTO class VALUES (1,uom,352)
+
+					INSERT INTO class VALUES (3,ttom,322)
+
+					INSERT INTO class VALUES (5,tom,32)
+
+					SELECT * FROM A where id = 1
+				
+					*/
 			}
 		
-			if (sql[0] == "select")
+			else if (sql[0] == "SELECT")
 			{
+				stringstream e(d);
+				SELECT a(e);
+
 				//find(sql);
-				//select * FROM A where id = 1
+				//SELECT * FROM A where id = 1
 			}
-			else if (sql[0] == "delete")
+			else if (sql[0] == "DELETE")
 			{
-				//del(sql);
+				stringstream e(d);
+				DELETE a(e);
 			}
-			else if (sql[0] == "update")
+			else if (sql[0] == "UPDATE")
 			{
-				//alt(sql);
+				UPDATE a(d);
 			}
-			else if (sql[0] == "insert")
+			else if (sql[0] == "INSERT")
 			{
-				//ins(sql);
-				//insert INTO A VALUES 1 1 25 asdasd
+				stringstream e(d);
+				INSERT a(e);
+				
+					/*
+				
+					INSERT INTO class VALUES(5,tom,32)
+					INSERT INTO class VALUES(6,eom,42)
+					INSERT INTO class VALUES(7,pom,62)
+					INSERT INTO class VALUES(5,tom,32)
+					*/
 			}
 			else
-			cout << "wrong input sql" << endl;
-
+			{
+				cout << "wrong input sql" << endl;
+			}
+			S.clear();
 		}
 
 
