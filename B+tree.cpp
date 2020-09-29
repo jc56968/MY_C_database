@@ -24,10 +24,12 @@ bool static operator>(string a, string b)
 		return 1;
 	else if ((a.size() == b.size()))
 	{
-		if ( std::operator>(a,b) )
+		if (std::operator>(a, b))
 			return 1;
-	
-		else
+
+		else if (std::operator<(a, b))
+			return 0;
+		else if (std::operator==(a, b))
 			return 0;
 	}
 	else
@@ -36,6 +38,9 @@ bool static operator>(string a, string b)
 }
 bool static operator<(string a, string b)
 {
+	if (std::operator==(a, b))
+		return 0;
+	else
 	return 1-(a > b);
 }
 template <class data, class value>
@@ -828,6 +833,8 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 		p->retreadp();
 		return pair<BNode<data, value>*, int>(0, 0);
 	}
+
+
 	template <class data, class value>
 	bool Bplusetree<data, value>::add(data d, value v)
 	{
@@ -861,9 +868,14 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 
 							while (!v_lock.empty())
 							{
-								q->retwritep();
+								if (q->mutex.try_lock_shared() != 1)
+									q->retwritep();
+								else
+									q->mutex.unlock_shared();
 								v_lock.pop();
 								q = q->father;
+								if (int(q) == 0xdddddddd && !v_lock.empty())
+									v_lock.pop();
 							}
 							v_lock.push(1);
 
@@ -886,9 +898,14 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 
 						while (!v_lock.empty())
 						{
-							q->retwritep();
+							if (q->mutex.try_lock_shared() != 1)
+								q->retwritep();
+							else
+								q->mutex.unlock_shared();
 							v_lock.pop();
 							q = q->father;
+							if(int(q)== 0xdddddddd &&!v_lock.empty())
+								v_lock.pop();
 						}
 						return 1;
 					}
@@ -916,9 +933,14 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 
 						while (!v_lock.empty())
 						{
-							q->retwritep();
+							if (q->mutex.try_lock_shared() != 1)
+								q->retwritep();
+							else
+								q->mutex.unlock_shared();
 							v_lock.pop();
 							q = q->father;
+							if (int(q) == 0xdddddddd && !v_lock.empty())
+								v_lock.pop();
 						}
 						v_lock.push(1);
 
@@ -931,16 +953,22 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 				}
 				else
 				{
-
+				
 					p->add_node(d, v);
 					BNode<data, value>* q = p;
 
 
 					while (!v_lock.empty())
 					{
-						q->retwritep();
+						
+						if (q->mutex.try_lock_shared() != 1)
+							q->retwritep();
+						else
+							q->mutex.unlock_shared();
 						v_lock.pop();
 						q = q->father;
+						if (int(q) == 0xdddddddd && !v_lock.empty())
+							v_lock.pop();
 					}
 					break;
 				}
@@ -950,9 +978,14 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 
 		while (!v_lock.empty())
 		{
-			q->retwritep();
+			if (q->mutex.try_lock_shared() != 1)
+				q->retwritep();
+			else
+				q->mutex.unlock_shared();
 			v_lock.pop();
 			q = q->father;
+			if (int(q) == 0xdddddddd && !v_lock.empty())
+				v_lock.pop();
 		} 
 		return 0;
 	}
@@ -1079,8 +1112,8 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 							{
 								
 								v_lock.pop();
-								p->retwritep();
-								p = p->father;
+								q->retwritep();
+								q = q->father;
 
 							}
 							v_lock.push(1);
@@ -1105,6 +1138,7 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 								{
 
 									v_lock.pop();
+
 									p->retwritep();
 									p = p->father;
 
@@ -1139,8 +1173,8 @@ BNode<data, value>::BNode(int Node_size , bool is ) :Node_size(Node_size), isBpl
 						{
 
 							v_lock.pop();
-							p->retwritep();
-							p = p->father;
+							q->retwritep();
+							q = q->father;
 
 						}
 						v_lock.push(1);
